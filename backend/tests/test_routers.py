@@ -69,6 +69,103 @@ class TestUserRoutes:
         data = resp.json()
         assert "events" in data
 
+    def test_get_user_activity_formats_multiple_event_types(self, test_client, mock_httpx_client):
+        from httpx import Response
+        from unittest.mock import MagicMock
+
+        events = [
+            {
+                "type": "PushEvent",
+                "repo": {"name": "owner/repo-a"},
+                "created_at": "2026-01-01T00:00:00Z",
+                "payload": {"commits": [{"sha": "a"}, {"sha": "b"}]},
+            },
+            {
+                "type": "PullRequestEvent",
+                "repo": {"name": "owner/repo-b"},
+                "created_at": "2026-01-02T00:00:00Z",
+                "payload": {"action": "opened", "pull_request": {"title": "Improve docs"}},
+            },
+            {
+                "type": "IssuesEvent",
+                "repo": {"name": "owner/repo-c"},
+                "created_at": "2026-01-03T00:00:00Z",
+                "payload": {"action": "closed", "issue": {"title": "Fix bug"}},
+            },
+            {
+                "type": "WatchEvent",
+                "repo": {"name": "owner/repo-d"},
+                "created_at": "2026-01-04T00:00:00Z",
+                "payload": {},
+            },
+            {
+                "type": "CreateEvent",
+                "repo": {"name": "owner/repo-e"},
+                "created_at": "2026-01-05T00:00:00Z",
+                "payload": {"ref_type": "branch", "ref": "feature-x"},
+            },
+            {
+                "type": "ForkEvent",
+                "repo": {"name": "owner/repo-f"},
+                "created_at": "2026-01-06T00:00:00Z",
+                "payload": {},
+            },
+            {
+                "type": "ReleaseEvent",
+                "repo": {"name": "owner/repo-g"},
+                "created_at": "2026-01-07T00:00:00Z",
+                "payload": {},
+            },
+        ]
+
+        async def get_with_custom_events(url, **kwargs):
+            resp = MagicMock(spec=Response)
+            if "/events" in url:
+                resp.status_code = 200
+                resp.json.return_value = events
+            elif "/users/" in url and "/repos" not in url and "/events" not in url:
+                from tests.conftest import SAMPLE_USER
+                resp.status_code = 200
+                resp.json.return_value = SAMPLE_USER
+            elif "/users/" in url and "/repos" in url:
+                from tests.conftest import SAMPLE_REPOS
+                resp.status_code = 200
+                resp.json.return_value = SAMPLE_REPOS
+            elif "/repos/" in url and "/stats/commit_activity" in url:
+                from tests.conftest import SAMPLE_COMMIT_ACTIVITY
+                resp.status_code = 200
+                resp.json.return_value = SAMPLE_COMMIT_ACTIVITY
+            elif "/repos/" in url and "/languages" in url:
+                resp.status_code = 200
+                resp.json.return_value = {"Python": 5000}
+            elif "/repos/" in url:
+                from tests.conftest import SAMPLE_REPO_DETAIL
+                resp.status_code = 200
+                resp.json.return_value = SAMPLE_REPO_DETAIL
+            elif "search/users" in url:
+                from tests.conftest import SAMPLE_SEARCH_RESULT
+                resp.status_code = 200
+                resp.json.return_value = SAMPLE_SEARCH_RESULT
+            else:
+                resp.status_code = 200
+                resp.json.return_value = {}
+            resp.headers = {"X-RateLimit-Remaining": "5000", "X-RateLimit-Reset": "9999999999"}
+            resp.raise_for_status = MagicMock()
+            return resp
+
+        mock_httpx_client.return_value.__aenter__.return_value.get = get_with_custom_events
+        resp = test_client.get("/user/testuser/activity")
+        assert resp.status_code == 200
+        data = resp.json()
+        descriptions = [event["description"] for event in data["events"]]
+        assert "Pushed 2 commits to owner/repo-a" in descriptions
+        assert "Opened PR 'Improve docs' in owner/repo-b" in descriptions
+        assert "Closed issue 'Fix bug' in owner/repo-c" in descriptions
+        assert "Starred owner/repo-d" in descriptions
+        assert "Created branch feature-x in owner/repo-e" in descriptions
+        assert "Forked owner/repo-f" in descriptions
+        assert "Release on owner/repo-g" in descriptions
+
 
 class TestExploreRoutes:
     def test_get_trending(self, test_client):
