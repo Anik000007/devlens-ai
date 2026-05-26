@@ -21,10 +21,13 @@ const SORT_OPTIONS = [
   { value: "repos", label: "Repos" },
 ]
 
+const PAGE_SIZE = 12
+
 export default function ExplorePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [searchInput, setSearchInput] = useState("")
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   
   // Data states
   const [trendingDevs, setTrendingDevs] = useState<ExploreDeveloper[]>([])
@@ -60,6 +63,11 @@ export default function ExplorePage() {
     return () => { cancelled = true }
   }, [])
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [search, selectedLang, sortBy])
+
   // Handle search when query changes
   useEffect(() => {
     if (!search || search.length < 2) {
@@ -89,9 +97,13 @@ export default function ExplorePage() {
     }
   }, [search])
 
+  const sanitizeSearch = (input: string) => {
+    return input.replace(/[<>"'&]/g, "").trim().slice(0, 100)
+  }
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setSearch(searchInput.trim())
+    setSearch(sanitizeSearch(searchInput))
   }
 
   // Determine which list to show and apply filters
@@ -109,6 +121,9 @@ export default function ExplorePage() {
     if (sortBy === "repos") return b.repos - a.repos
     return b.score - a.score
   })
+
+  const paginated = filtered.slice(0, visibleCount)
+  const hasMore = visibleCount < filtered.length
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -259,16 +274,29 @@ export default function ExplorePage() {
               }
             />
           ) : (
-            <motion.div
-              layout
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-            >
-              <AnimatePresence>
-                {filtered.map((dev, i) => (
-                  <DeveloperCard key={dev.id} developer={dev} index={i} />
-                ))}
-              </AnimatePresence>
-            </motion.div>
+            <>
+              <motion.div
+                layout
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+              >
+                <AnimatePresence>
+                  {paginated.map((dev, i) => (
+                    <DeveloperCard key={dev.id} developer={dev} index={i} />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+              {hasMore && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((p) => p + PAGE_SIZE)}
+                    className="rounded-xl px-8 border-border hover:border-primary/40"
+                  >
+                    Show More ({filtered.length - visibleCount} remaining)
+                  </Button>
+                </motion.div>
+              )}
+            </>
           )}
         </main>
       </div>

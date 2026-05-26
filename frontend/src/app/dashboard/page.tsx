@@ -1,15 +1,12 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Navbar } from "@/components/navbar"
 import { Sidebar } from "@/components/sidebar"
 import { AIInsightPanel } from "@/components/ai-insight-panel"
 import { LanguageBar } from "@/components/language-bar"
 import { StatCard } from "@/components/stat-card"
-import {
-  fetchUserAnalytics, fetchAISummary, fetchResumePoints,
-  type UserAnalytics, type AISummary,
-} from "@/lib/api"
+import { useUserAnalytics, useAISummary } from "@/lib/hooks"
 import {
   LineChart, Line, PieChart, Pie, Cell, RadarChart, Radar,
   PolarGrid, PolarAngleAxis, XAxis, YAxis,
@@ -26,18 +23,9 @@ const COLORS = ["#6366F1", "#14B8A6", "#f59e0b", "#ec4899", "#10b981"]
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  
-  // Search state
+
   const [searchInput, setSearchInput] = useState("torvalds")
   const [username, setUsername] = useState("torvalds")
-
-  // Data states
-  const [analytics, setAnalytics] = useState<UserAnalytics | null>(null)
-  const [aiData, setAiData] = useState<AISummary | null>(null)
-
-  // Loading / error
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,43 +34,20 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => {
-    if (!username) return
-    let cancelled = false
+  const { data: analytics, isLoading, error } = useUserAnalytics(username)
+  const { data: aiData } = useAISummary({
+    username: analytics?.username || "",
+    name: analytics?.name || "",
+    bio: analytics?.bio,
+    top_languages: analytics?.top_languages,
+    total_stars: analytics?.total_stars,
+    followers: analytics?.followers,
+    repos: analytics?.repo_count,
+    created_at: analytics?.created_at,
+  }, !!analytics)
 
-    async function load() {
-      setLoading(true)
-      setError("")
-
-      try {
-        const analyticsData = await fetchUserAnalytics(username)
-        if (cancelled) return
-        setAnalytics(analyticsData)
-
-        const ai = await fetchAISummary({
-          username: analyticsData.username,
-          name: analyticsData.name,
-          bio: analyticsData.bio,
-          top_languages: analyticsData.top_languages,
-          total_stars: analyticsData.total_stars,
-          followers: analyticsData.followers,
-          repos: analyticsData.repo_count,
-          created_at: analyticsData.created_at,
-        })
-        if (cancelled) return
-        setAiData(ai)
-      } catch (err: any) {
-        if (!cancelled) {
-          setError(err.message || "Failed to load profile")
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    load()
-    return () => { cancelled = true }
-  }, [username])
+  const loading = isLoading
+  const err = error?.message || ""
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -120,20 +85,20 @@ export default function DashboardPage() {
             </motion.form>
           </div>
 
-          {error && (
-             <div className="p-8 text-center border border-red-500/20 bg-red-500/10 rounded-2xl">
-               <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-               <p className="text-red-400 font-medium">Error loading user: {error}</p>
-             </div>
-          )}
+{err && (
+              <div className="p-8 text-center border border-red-500/20 bg-red-500/10 rounded-2xl">
+                <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                <p className="text-red-400 font-medium">Error loading user: {err}</p>
+              </div>
+           )}
 
-          {!error && loading && (
+           {!err && loading && (
             <div className="flex-1 flex items-center justify-center py-24">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
           )}
 
-          {!error && !loading && analytics && (
+          {!err && !loading && analytics && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               {/* Profile header */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-6 rounded-2xl border border-border bg-card">

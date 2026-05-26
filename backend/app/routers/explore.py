@@ -52,8 +52,11 @@ async def search_users(q: str = "", per_page: int = 10):
     Search GitHub users by query string.
     Returns enriched profiles with language stats.
     """
+    q = q.strip()
     if not q or len(q) < 2:
         return {"developers": [], "total": 0}
+    if len(q) > 100:
+        q = q[:100]
 
     search_result = await search_github_users(q, per_page=per_page)
     items = search_result.get("items", [])

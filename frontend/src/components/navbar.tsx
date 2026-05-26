@@ -20,8 +20,9 @@ export function Navbar({ onMenuToggle, showSidebarToggle }: NavbarProps) {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (search.trim()) {
-      router.push(`/profile/${search.trim()}`)
+    const sanitized = search.replace(/[<>"'&]/g, "").trim().slice(0, 100)
+    if (sanitized) {
+      router.push(`/profile/${encodeURIComponent(sanitized)}`)
       setSearch("")
       setSearchOpen(false)
     }

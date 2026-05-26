@@ -109,10 +109,16 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
 
         {/* Bottom */}
         <div className="pb-4 px-2 space-y-1 border-t border-sidebar-border pt-3">
-          {[{ Icon: Settings, label: "Settings" }, { Icon: HelpCircle, label: "Help" }].map(({ Icon, label }) => (
-            <button
+          {[{ Icon: Settings, label: "Settings", href: "/settings" }, { Icon: HelpCircle, label: "Help", href: "/help" }].map(({ Icon, label, href }) => (
+            <Link
               key={label}
-              className="w-full flex items-center gap-3 px-2 py-2 rounded-xl text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-all"
+              href={href}
+              className={cn(
+                "w-full flex items-center gap-3 px-2 py-2 rounded-xl transition-all",
+                pathname === href
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              )}
             >
               <Icon className="w-5 h-5 shrink-0" />
               <AnimatePresence>
@@ -128,7 +134,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
                   </motion.span>
                 )}
               </AnimatePresence>
-            </button>
+            </Link>
           ))}
         </div>
 
@@ -187,6 +193,15 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
                   </Link>
                 )
               })}
+              <div className="pt-3 mt-3 border-t border-sidebar-border">
+                {[{ Icon: Settings, label: "Settings", href: "/settings" }, { Icon: HelpCircle, label: "Help", href: "/help" }].map(({ Icon, label, href }) => (
+                  <Link key={label} href={href} onClick={onToggle}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all">
+                    <Icon className="w-4 h-4 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </nav>
           </motion.aside>
         )}
