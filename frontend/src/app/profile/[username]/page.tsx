@@ -16,7 +16,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Users, Star, GitFork, Zap, MapPin, Building2, Link, Download,
   GitBranch, Activity, FileText, Code2, Trophy, AlertCircle, Loader2,
@@ -212,11 +212,10 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <Button variant="outline" size="sm" className="rounded-xl border-border hover:border-primary/40" asChild>
-                    <a href={d.html_url} target="_blank" rel="noopener noreferrer">
-                      <GitBranch className="w-4 h-4 mr-2" /> View on GitHub
-                    </a>
-                  </Button>
+                  <a href={d.html_url} target="_blank" rel="noopener noreferrer"
+                    className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl border-border hover:border-primary/40")}>
+                    <GitBranch className="w-4 h-4 mr-2" /> View on GitHub
+                  </a>
                 </div>
               </motion.div>
             </div>

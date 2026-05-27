@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/sidebar"
 import { AIInsightPanel } from "@/components/ai-insight-panel"
 import { fetchRepoAnalysis, type RepoAnalysis } from "@/lib/api"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { CheckCircle, XCircle, AlertCircle, GitBranch, Star, GitFork, Shield, FileText, Zap, Activity, Code2, ExternalLink, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -135,11 +135,10 @@ export default function RepoPage({ params }: { params: Promise<{ owner: string; 
                 {r.language && <span className="px-2 py-0.5 rounded-full bg-secondary text-[11px]">{r.language}</span>}
               </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl border-border hover:border-primary/40 shrink-0" asChild>
-              <a href={r.html_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-2" /> View on GitHub
-              </a>
-            </Button>
+            <a href={r.html_url} target="_blank" rel="noopener noreferrer"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl border-border hover:border-primary/40 shrink-0")}>
+              <ExternalLink className="w-4 h-4 mr-2" /> View on GitHub
+            </a>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

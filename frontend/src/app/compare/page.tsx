@@ -164,7 +164,7 @@ export default function ComparePage() {
                        <a href={`/profile/${dev.username}`} className="text-xs text-muted-foreground hover:text-foreground hover:underline">View Full Profile &rarr;</a>
                     </div>
                     <div className="flex items-center gap-3">
-                      <img src={dev.avatar} alt={dev.name} className="w-14 h-14 rounded-2xl ring-2 object-cover" style={{ ringColor: color }} />
+                      <img src={dev.avatar} alt={dev.name} className="w-14 h-14 rounded-2xl border-2 object-cover" style={{ borderColor: color }} />
                       <div>
                         <p className="font-bold">{dev.name}</p>
                         <p className="text-sm text-muted-foreground">@{dev.username}</p>
