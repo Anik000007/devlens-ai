@@ -9,7 +9,6 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend to Vercel
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Checkout repository
@@ -43,15 +42,18 @@ jobs:
   deploy-backend:
     name: Deploy Backend to Render/Railway
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Deploy to Render
-        uses: renderhq/render-deploy-action@v1
-        with:
-          render-token: ${{ secrets.RENDER_API_TOKEN }}
-          service-id: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
-          pull-request: false
+        env:
+          RENDER_API_TOKEN: ${{ secrets.RENDER_API_TOKEN }}
+          RENDER_BACKEND_SERVICE_ID: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
+        run: |
+          curl -s -X POST \
+            "https://api.render.com/v1/services/${RENDER_BACKEND_SERVICE_ID}/deploys" \
+            -H "Authorization: Bearer ${RENDER_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": "do_not_clear"}'

@@ -95,13 +95,15 @@ export function Navbar({ onMenuToggle, showSidebarToggle }: NavbarProps) {
 
           <ThemeToggle />
 
-          <Button
-            id="navbar-analyze-btn"
-            size="sm"
-            className="ml-1 rounded-xl text-xs font-semibold glow hidden sm:flex"
-          >
-            <Link href="/explore">Explore →</Link>
-          </Button>
+          <Link href="/explore">
+            <Button
+              id="navbar-analyze-btn"
+              size="sm"
+              className="ml-1 rounded-xl text-xs font-semibold glow hidden sm:flex"
+            >
+              Explore →
+            </Button>
+          </Link>
         </div>
       </div>
 

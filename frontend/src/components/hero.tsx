@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -29,7 +30,18 @@ const STATS = [
   { value: "99.9%", label: "Uptime", icon: Shield },
   { value: "<2s", label: "Analysis Speed", icon: Zap },
 ]
-const HEATMAP_DATA = Array.from({ length: 52 * 7 }, (_, i) => Math.random() > 0.6 ? Math.floor(Math.random() * 4) + 1 : 0)
+// Deterministic seeded PRNG to avoid SSR/client hydration mismatch
+function mulberry32(seed: number) {
+  return () => {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed)
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t
+    return ((t ^ t >>> 14) >>> 0) / 4294967296
+  }
+}
+
+const _heatmapRng = mulberry32(42)
+const HEATMAP_DATA = Array.from({ length: 52 * 7 }, () => _heatmapRng() > 0.6 ? Math.floor(_heatmapRng() * 4) + 1 : 0)
 const ACTIVITY_PREVIEW = [
   { icon: GitCommit, text: "Merged 3 pull requests to linux/kernel", time: "2h ago", color: "#6366F1" },
   { icon: GitBranch, text: "Created branch feature/io-uring-v2", time: "5h ago", color: "#14B8A6" },
@@ -38,19 +50,25 @@ const ACTIVITY_PREVIEW = [
   { icon: Activity, text: "74 contributions in the last month", time: "Stats", color: "#ec4899" },
 ]
 
+// Pre-compute deterministic heatmap preview data at module level
+const _previewRng = mulberry32(7)
+const HEATMAP_PREVIEW_DATA = (() => {
+  const weeks = 18, days = 7
+  return Array.from({ length: weeks * days }, () =>
+    _previewRng() > 0.55 ? Math.floor(_previewRng() * 4) + 1 : 0
+  )
+})()
+
 function HeatmapPreview() {
   const weeks = 18
   const days = 7
-  const data = Array.from({ length: weeks * days }, (_, i) =>
-    Math.random() > 0.55 ? Math.floor(Math.random() * 4) + 1 : 0
-  )
   const colors = ["transparent", "#1e2a4a", "#3730a3", "#4f46e5", "#818cf8"]
   return (
     <div className="flex gap-1">
       {Array.from({ length: weeks }).map((_, wi) => (
         <div key={wi} className="flex flex-col gap-1">
           {Array.from({ length: days }).map((_, di) => {
-            const val = data[wi * days + di]
+            const val = HEATMAP_PREVIEW_DATA[wi * days + di]
             return (
               <div
                 key={di}
@@ -328,12 +346,16 @@ export default function HeroSection() {
             Enter any GitHub username and get a full developer intelligence report in seconds.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button id="cta-explore-btn" size="lg" className="rounded-2xl px-8 glow font-semibold">
-              <a href="/explore">Explore Developers <ArrowRight className="w-4 h-4 ml-2" /></a>
-            </Button>
-            <Button id="cta-compare-btn" size="lg" variant="outline" className="rounded-2xl px-8 font-semibold border-border hover:border-primary/40">
-              <a href="/compare">Compare Devs</a>
-            </Button>
+            <Link href="/explore">
+              <Button id="cta-explore-btn" size="lg" className="rounded-2xl px-8 glow font-semibold inline-flex items-center gap-2">
+                Explore Developers <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+            <Link href="/compare">
+              <Button id="cta-compare-btn" size="lg" variant="outline" className="rounded-2xl px-8 font-semibold border-border hover:border-primary/40">
+                Compare Devs
+              </Button>
+            </Link>
           </div>
         </motion.div>
       </section>

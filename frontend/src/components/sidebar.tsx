@@ -60,15 +60,15 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
           </div>
           <AnimatePresence>
             {open && (
-              <motion.span
+              <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.15 }}
-                className="ml-2.5 font-bold text-sm gradient-text whitespace-nowrap"
+                className="ml-2.5 whitespace-nowrap"
               >
-                DevLens AI
-              </motion.span>
+                <span className="font-bold text-sm gradient-text">DevLens AI</span>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
@@ -137,15 +137,17 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
             </Link>
           ))}
         </div>
-
-        {/* Toggle button */}
-        <button
-          onClick={onToggle}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center shadow-md hover:bg-primary hover:border-primary hover:text-primary-foreground transition-all"
-        >
-          {open ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        </button>
       </motion.aside>
+
+      {/* Toggle button — outside sidebar to avoid overflow-hidden clipping */}
+      <motion.button
+        onClick={onToggle}
+        animate={{ left: open ? 217 : 61 }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+        className="fixed top-20 z-50 w-6 h-6 rounded-full bg-card border border-border hidden lg:flex items-center justify-center shadow-md hover:bg-primary hover:border-primary hover:text-primary-foreground transition-colors"
+      >
+        {open ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+      </motion.button>
 
       {/* Mobile sidebar (slide-in) */}
       <AnimatePresence>
@@ -167,7 +169,15 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
                     <path d="M3 12l9 5 9-5" stroke="white" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </div>
-                <span className="font-bold text-sm gradient-text">DevLens AI</span>
+                <span
+                  className="font-bold text-sm"
+                  style={{
+                    background: "linear-gradient(135deg, #6366F1, #14B8A6)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >DevLens AI</span>
               </div>
               <button onClick={onToggle} className="text-muted-foreground hover:text-foreground">
                 <X className="w-4 h-4" />

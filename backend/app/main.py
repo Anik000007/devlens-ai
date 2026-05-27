@@ -1,5 +1,12 @@
 import logging
 import sys
+from pathlib import Path
+
+# Ensure the project root is on sys.path so ai_engine/ is importable
+_PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
