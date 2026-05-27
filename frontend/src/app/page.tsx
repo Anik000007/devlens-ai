@@ -1,17 +1,12 @@
-import { Navbar } from "@/components/navbar";
-import HeroSection from "@/components/hero";
-import type { Metadata } from "next";
+import { CinematicLanding } from "@/components/cinematic-landing"
+import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "DevLens AI — GitHub Contributor Intelligence Platform",
-  description: "Analyze any GitHub profile with AI-powered analytics, skill insights, repository quality scores, and resume-ready achievements in seconds.",
-};
+  title: "DevLens AI — Celestial GitHub Intelligence",
+  description: "Venture past the code across the developer universe. Get AI-powered analytics, skill radars, repository health, and resume bullets in seconds.",
+}
 
 export default function HomePage() {
-  return (
-    <>
-      <Navbar />
-      <HeroSection />
-    </>
-  );
+  return <CinematicLanding />
 }
+
