@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 from pathlib import Path
 
 # Ensure the project root is on sys.path so ai_engine/ is importable
@@ -16,6 +17,7 @@ from typing import Union
 from app.core.config import settings
 from app.routers import users, explore, compare, ai, repos
 from app.services.rate_limiter import check_rate_limit, get_rate_limit_headers
+from app.services.github_service import GitHubRateLimitError
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
@@ -71,6 +73,27 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     logger.info(f"Status: {response.status_code}")
     return response
+
+
+@app.exception_handler(GitHubRateLimitError)
+async def github_rate_limit_handler(request: Request, exc: GitHubRateLimitError):
+    has_token = bool(settings.GITHUB_TOKEN)
+    detail = (
+        "GitHub API rate limit exhausted. Try again later."
+        if has_token
+        else "GitHub API rate limit exhausted (60 req/hr anonymous limit). "
+             "Set GITHUB_TOKEN in backend/.env to raise the limit to 5,000 req/hr."
+    )
+    headers = {}
+    if exc.reset:
+        retry_after = max(1, exc.reset - int(time.time()))
+        headers["Retry-After"] = str(retry_after)
+    logger.warning("GitHub rate limit hit on %s (reset=%s)", request.url.path, exc.reset)
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={"detail": detail, "reset_unix": exc.reset, "has_token": has_token},
+        headers=headers,
+    )
 
 
 @app.exception_handler(RequestValidationError)

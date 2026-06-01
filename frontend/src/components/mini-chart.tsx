@@ -1,5 +1,4 @@
 "use client"
-import { useMemo } from "react"
 
 interface MiniChartProps {
   data: number[]
@@ -8,46 +7,39 @@ interface MiniChartProps {
   height?: number
 }
 
-export function MiniChart({ data, color = "#6366F1", width = 120, height = 36 }: MiniChartProps) {
-  const points = useMemo(() => {
-    if (!data.length) return ""
-    const max = Math.max(...data)
-    const min = Math.min(...data)
-    const range = max - min || 1
-    const step = width / (data.length - 1)
-    return data
-      .map((v, i) => `${i * step},${height - ((v - min) / range) * (height - 4) - 2}`)
-      .join(" ")
-  }, [data, width, height])
-
-  const areaPoints = useMemo(() => {
-    if (!data.length) return ""
-    const max = Math.max(...data)
-    const min = Math.min(...data)
-    const range = max - min || 1
-    const step = width / (data.length - 1)
-    const linePoints = data
-      .map((v, i) => `${i * step},${height - ((v - min) / range) * (height - 4) - 2}`)
-    return `${linePoints.join(" ")} ${width},${height} 0,${height}`
-  }, [data, width, height])
-
+export function MiniChart({ data, color = "#7C3AED", width = 80, height = 28 }: MiniChartProps) {
+  if (!data || data.length < 2) return null
+  
+  const max = Math.max(...data, 1)
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width
+    const y = height - (v / max) * height * 0.85
+    return `${x},${y}`
+  })
+  
+  const linePath = `M${points.join(" L")}`
+  const areaPath = `${linePath} L${width},${height} L0,${height} Z`
+  const gradientId = `mini-chart-gradient-${color.replace("#", "")}`
+  
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
       <defs>
-        <linearGradient id={`mini-grad-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.2} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-      <polygon
-        points={areaPoints}
-        fill={`url(#mini-grad-${color.replace("#","")})`}
+      {/* Area fill */}
+      <path
+        d={areaPath}
+        fill={`url(#${gradientId})`}
       />
-      <polyline
-        points={points}
+      {/* Line */}
+      <path
+        d={linePath}
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

@@ -32,6 +32,20 @@ _rate_limit_remaining: Optional[int] = None
 _rate_limit_reset: Optional[int] = None
 
 
+class GitHubRateLimitError(Exception):
+    """Raised when GitHub API returns 403 due to exhausted rate limit."""
+    def __init__(self, reset: Optional[int] = None):
+        self.reset = reset
+        super().__init__("GitHub API rate limit exhausted")
+
+
+def _check_rate_limit_error(resp: httpx.Response) -> None:
+    """Raise GitHubRateLimitError if response is a 403 with quota exhausted."""
+    if resp.status_code == 403 and resp.headers.get("X-RateLimit-Remaining") == "0":
+        reset = resp.headers.get("X-RateLimit-Reset")
+        raise GitHubRateLimitError(reset=int(reset) if reset and reset.isdigit() else None)
+
+
 def get_headers() -> Dict[str, str]:
     headers = {
         "Accept": "application/vnd.github.v3+json",
@@ -79,6 +93,7 @@ async def fetch_user(username: str) -> Optional[Dict[str, Any]]:
         _track_rate_limit(resp)
         if resp.status_code == 404:
             return None
+        _check_rate_limit_error(resp)
         resp.raise_for_status()
         data = resp.json()
         await cache_set(cache_key, data)
@@ -99,6 +114,7 @@ async def fetch_user_repos(username: str, per_page: int = 30) -> list:
             params={"sort": "stars", "per_page": per_page, "type": "owner"},
         )
         _track_rate_limit(resp)
+        _check_rate_limit_error(resp)
         resp.raise_for_status()
         data = resp.json()
         await cache_set(cache_key, data)
@@ -117,6 +133,7 @@ async def fetch_repo_detail(owner: str, repo: str) -> Optional[Dict[str, Any]]:
         _track_rate_limit(resp)
         if resp.status_code == 404:
             return None
+        _check_rate_limit_error(resp)
         resp.raise_for_status()
         data = resp.json()
         await cache_set(cache_key, data)
@@ -128,6 +145,7 @@ async def fetch_repo_languages(owner: str, repo: str) -> Dict[str, int]:
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get(f"{GITHUB_API}/repos/{owner}/{repo}/languages", headers=get_headers())
         _track_rate_limit(resp)
+        _check_rate_limit_error(resp)
         resp.raise_for_status()
         return resp.json()
 

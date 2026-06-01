@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/sidebar"
 import { AIInsightPanel } from "@/components/ai-insight-panel"
 import { fetchRepoAnalysis, type RepoAnalysis } from "@/lib/api"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { CheckCircle, XCircle, AlertCircle, GitBranch, Star, GitFork, Shield, FileText, Zap, Activity, Code2, ExternalLink, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -62,8 +62,8 @@ export default function RepoPage({ params }: { params: Promise<{ owner: string; 
         if (!cancelled) {
           setData(res)
         }
-      } catch (err: any) {
-        if (!cancelled) setError(err.message || "Failed to load repository data")
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load repository data")
       } finally {
         if (!cancelled) setLoading(false)
       }
