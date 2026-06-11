@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import {
-  LayoutDashboard, Compass, GitCompare, Star,
+  LayoutDashboard, Compass, GitCompare, Star, Briefcase, Trophy,
   ChevronLeft, ChevronRight, X, Settings, HelpCircle,
 } from "lucide-react"
 
@@ -12,6 +12,8 @@ const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/explore", icon: Compass, label: "Explore" },
   { href: "/compare", icon: GitCompare, label: "Compare" },
+  { href: "/pipeline", icon: Briefcase, label: "Pipeline" },
+  { href: "/career", icon: Trophy, label: "Career" },
   { href: "/", icon: Star, label: "Home" },
 ]
 

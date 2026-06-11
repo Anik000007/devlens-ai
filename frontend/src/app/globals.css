@@ -546,3 +546,53 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.35);
 }
+
+/* ── Print styles — clean PDF export for profile pages ─────── */
+@media print {
+  /* Force light backgrounds for printer ink + legibility */
+  html, body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide chrome */
+  aside, header, .no-print {
+    display: none !important;
+  }
+  button:not(.print-show) {
+    display: none !important;
+  }
+
+  /* Collapse layout for portrait page */
+  main {
+    padding: 0 !important;
+    padding-top: 0 !important;
+  }
+  .lg\:pl-\[220px\], .lg\:pl-16 {
+    padding-left: 0 !important;
+  }
+  .lg\:grid-cols-3, .lg\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  .lg\:col-span-2 {
+    grid-column: span 1 / span 1 !important;
+  }
+
+  /* Keep charts intact on the page */
+  .recharts-responsive-container, .rounded-2xl {
+    page-break-inside: avoid;
+  }
+
+  /* Surface text on white */
+  .bg-card, .bg-secondary, .bg-background {
+    background: white !important;
+    color: black !important;
+    border-color: #d4d4d8 !important;
+  }
+  .text-muted-foreground, .text-foreground\/60, .text-foreground\/55 {
+    color: #3f3f46 !important;
+  }
+  .text-primary {
+    color: #6D28D9 !important;
+  }
+}

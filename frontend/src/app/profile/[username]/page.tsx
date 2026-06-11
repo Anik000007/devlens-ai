@@ -11,6 +11,7 @@ import {
   ApiError,
   type UserAnalytics, type AISummary,
 } from "@/lib/api"
+import { usePipelineStore, useIsInPipeline } from "@/lib/pipeline-store"
 import {
   LineChart, Line, PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
@@ -20,6 +21,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Users, Star, GitFork, Zap, MapPin, Building2, Link, Download,
   GitBranch, Activity, FileText, Code2, Trophy, AlertCircle, Loader2,
+  Briefcase, Check,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -231,11 +233,12 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
                     {d.blog && <span className="flex items-center gap-1.5"><Link className="w-3 h-3" />{d.blog.replace("https://", "")}</span>}
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 shrink-0 no-print">
                   <a href={d.html_url} target="_blank" rel="noopener noreferrer"
                     className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5")}>
                     <GitBranch className="w-4 h-4 mr-2" /> View on GitHub
                   </a>
+                  <PipelineButton analytics={d} />
                 </div>
               </motion.div>
             </div>
@@ -398,5 +401,50 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
         </main>
       </div>
     </div>
+  )
+}
+
+function PipelineButton({ analytics }: { analytics: UserAnalytics }) {
+  const inPipeline = useIsInPipeline(analytics.username)
+  const addCandidate = usePipelineStore((s) => s.addCandidate)
+
+  const handleAdd = () => {
+    addCandidate({
+      id: analytics.username,
+      username: analytics.username,
+      name: analytics.name,
+      avatar: analytics.avatar,
+      bio: analytics.bio,
+      topLanguages: analytics.top_languages || [],
+      stars: analytics.total_stars,
+      followers: analytics.followers,
+      repos: analytics.repo_count,
+      score: analytics.open_source_score,
+    })
+  }
+
+  return (
+    <Button
+      size="sm"
+      variant={inPipeline ? "outline" : "default"}
+      disabled={inPipeline}
+      onClick={handleAdd}
+      className={cn(
+        "rounded-xl",
+        inPipeline
+          ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/5"
+          : "bg-gradient-to-r from-primary to-primary/85 text-white shadow-md shadow-primary/20"
+      )}
+    >
+      {inPipeline ? (
+        <>
+          <Check className="w-4 h-4 mr-1.5" /> In Pipeline
+        </>
+      ) : (
+        <>
+          <Briefcase className="w-4 h-4 mr-1.5" /> Add to Pipeline
+        </>
+      )}
+    </Button>
   )
 }

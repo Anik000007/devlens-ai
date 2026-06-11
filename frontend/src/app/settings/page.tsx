@@ -4,9 +4,10 @@ import { motion } from "framer-motion"
 import { Navbar } from "@/components/navbar"
 import { Sidebar } from "@/components/sidebar"
 import { Input } from "@/components/ui/input"
-import { Settings, Sun, Moon, Palette, Globe, ChevronRight } from "lucide-react"
+import { Settings, Sun, Moon, Palette, Globe, Keyboard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
+import { SHORTCUTS, ShortcutList } from "@/components/keyboard-shortcuts-provider"
 
 export default function SettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -67,18 +68,14 @@ export default function SettingsPage() {
               </div>
             </motion.div>
 
-            {/* Coming soon */}
+            {/* Keyboard shortcuts */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="rounded-2xl border border-border/60 bg-card/50 p-6">
-              <h2 className="font-semibold text-muted-foreground flex items-center gap-2 mb-3">More Settings <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">Coming Soon</span></h2>
-              <div className="space-y-2">
-                {["Notifications", "Privacy", "Integrations", "Keyboard Shortcuts"].map((item) => (
-                  <div key={item} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 text-sm text-muted-foreground">
-                    <span>{item}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
-                ))}
-              </div>
+              className="rounded-2xl border border-border bg-card p-6">
+              <h2 className="font-semibold flex items-center gap-2 mb-4"><Keyboard className="w-4 h-4 text-primary" /> Keyboard Shortcuts</h2>
+              <p className="text-xs text-muted-foreground mb-4">
+                Press <kbd className="inline-flex items-center min-w-[1.5rem] justify-center text-[10px] font-mono font-medium px-1.5 py-0.5 bg-foreground/5 border border-border rounded-md text-foreground">?</kbd> anywhere to open the shortcut help overlay. Chord shortcuts start with <kbd className="inline-flex items-center min-w-[1.5rem] justify-center text-[10px] font-mono font-medium px-1.5 py-0.5 bg-foreground/5 border border-border rounded-md text-foreground">G</kbd> followed by a letter within 1.5 seconds.
+              </p>
+              <ShortcutList shortcuts={SHORTCUTS} />
             </motion.div>
           </div>
         </main>
